@@ -35,6 +35,7 @@ function App() {
   const [count, setCount] = useState(0);
   const [pinOn, setPinOn] = useState<Boolean>(false);
   const [tasks, setTasks] = useState<INote[]>(dataNotes);
+  const [position, setPosition] = useState(tasks.length)
 
   const eventHandler = () => {};
 
@@ -51,6 +52,7 @@ function App() {
     });
     setTasks(newArray);
   };
+  
 
   const changeNotePin = (id: number) => {
     const newArray = tasks.map((item, i) => {
@@ -67,6 +69,10 @@ function App() {
     const newArray = tasks.filter((item, i) => item.id !== id);
     setTasks(newArray);
   };
+
+  const dragHandler = (id:number) => {
+
+  }
 
   return (
     <div className="h-screen flex flex-col">
@@ -96,7 +102,7 @@ function App() {
           <button
             onClick={() => setPinOn(!pinOn)}
             className={`${
-              pinOn ? "bg-secondary text-secondary-content" : "bg-neutral"
+              pinOn ? "bg-secondary text-white" : "bg-gray-400 opacity-80 text-gray-200"
             } h-9 w-9 flex items-center justify-center rounded-full`}
           >
             <UilMapPinAlt size="18" />
@@ -106,6 +112,7 @@ function App() {
           <div className="p-4 flex flex-wrap gap-3 overflow-y-auto overflow-x-hidden containerKu">
             {tasks.map((d, i) => (
               <Draggable
+                onStart={()=>dragHandler(d.id)}
                 key={i}
                 bounds="parent"
                 // bounds={{left: 1, right: 0, bottom: 10, top:20}}
@@ -113,8 +120,8 @@ function App() {
                 // defaultPosition={{ x: 100, y: 400 }}
               >
                 <div
-                  className={`bg-blue-300 flex flex-col justify-between gap-1 cursor-move parentK shadow-xl rounded text-neutral p-3 pb-2 pr-2 font-bold h-56 text-sm w-52 ${
-                    pinOn && !d.isPinned ? "opacity-30" : "opacity-100"
+                  className={`bg-accent flex flex-col justify-between gap-1 cursor-move parentK shadow-xl rounded text-neutral p-3 pb-2 pr-2 font-bold h-56 text-sm w-52 ${
+                    pinOn && !d.isPinned ? "opacity-30 z-0" : "opacity-100 z-10"
                   }`}
                 >
                   <TextareaAutosize
@@ -126,15 +133,15 @@ function App() {
                   <div className="flex items-center justify-end gap-2 childK text-transparent">
                     <div
                       onClick={() => deleteNote(d.id)}
-                      className="w-5 h-5 rounded cursor-pointer bg-transparent hover:bg-gray-200 hover:text-red-800"
+                      className="w-5 h-5 rounded cursor-pointer bg-transparent flex items-center justify-center hover:bg-gray-200 hover:text-red-800"
                     >
                       <UilTrashAlt size="18" />
                     </div>
 
                     <div
                       onClick={() => changeNotePin(d.id)}
-                      className={`w-5 h-5 rounded cursor-pointer bg-transparent hover:bg-gray-200 hover:text-gray-800 ${
-                        d.isPinned ? "text-purple-600" : ""
+                      className={`w-5 h-5 rounded cursor-pointer bg-transparent flex items-center justify-center hover:bg-gray-200 hover:text-gray-800 ${
+                        d.isPinned ? "text-accent-content" : ""
                       } `}
                     >
                       <UilMapPinAlt size="18" />
