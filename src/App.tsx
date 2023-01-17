@@ -12,6 +12,7 @@ import TextareaAutosize from "react-textarea-autosize";
 // import supabs from '
 import { supabase } from "./initSupabase.js";
 import debounce from "lodash.debounce";
+import { v4 as uuidv4 } from "uuid";
 
 export interface INote {
   id: number;
@@ -102,13 +103,14 @@ function App() {
         return item;
       }
     });
+    // console.log(id)
     // console.log(ev.target.value)
     // console.log(newArray)
     setTasks(newArray);
   };
 
   const changeNotePin = async (id: number, isPin: boolean) => {
-    await supabase.from('notes').update({isPinned: !isPin}).eq("id", id)
+    await supabase.from("notes").update({ isPinned: !isPin }).eq("id", id);
     const newArray = tasks.map((item, i) => {
       if (id === item.id) {
         return { ...item, isPinned: !item.isPinned };
@@ -119,7 +121,33 @@ function App() {
     setTasks(newArray);
   };
 
-  const deleteNote = (id: number) => {
+  const addNewNote = async () => {
+    const { data } = await supabase
+      .from("notes")
+      .insert({
+        // id: newId,
+        isPinned: false,
+        note: "",
+        tag: "",
+        color: "blue",
+      })
+      .select()
+      .single();
+    console.log(data);
+    setTasks((current) => [
+      ...current,
+      {
+        color: "blue",
+        id: data.id,
+        isPinned: false,
+        note: "",
+        tag: "",
+      },
+    ]);
+  };
+
+  const deleteNote = async (id: number) => {
+    await supabase.from("notes").delete().eq("id", id);
     const newArray = tasks.filter((item, i) => item.id !== id);
     setTasks(newArray);
   };
@@ -136,18 +164,7 @@ function App() {
         <div className="w-16 flex flex-col items-center gap-4 py-4 h-full bg-base-300 border-r-[1.3px] border-r-neutral">
           <button
             disabled={status === "loading"}
-            onClick={() =>
-              setTasks((current) => [
-                ...current,
-                {
-                  color: "blue",
-                  id: new Date().valueOf(),
-                  isPinned: false,
-                  note: "",
-                  tag: "",
-                },
-              ])
-            }
+            onClick={() => addNewNote()}
             className="bg-accent-content hover:bg-accent-focus hover:text-accent-content transition-all text-accent w-9 h-9 rounded-full flex items-center justify-center"
           >
             <UilPlus />
