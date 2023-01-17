@@ -27,14 +27,14 @@ const dataNotes: INote[] = [
     color: "blue",
     id: 1,
     isPinned: false,
-    note: "first note",
+    note: "Drag Me Anywhere",
     tag: "work",
   },
   {
     color: "green",
     id: 2,
     isPinned: true,
-    note: "second note",
+    note: "Tap the pin button on sidebar",
     tag: "school",
   },
 ];
@@ -52,11 +52,11 @@ function App() {
 
   const updateNoteData = async (input: string, id: number) => {
     setOnUpdate(true);
-    const ssss = await supabase
+    const { error } = await supabase
       .from("notes")
       .update({ note: input })
       .eq("id", id);
-    if (ssss) console.log(ssss);
+    if (error !== null) console.log(error);
     setTimeout(() => {
       setOnUpdate(false);
     }, 500);
@@ -87,7 +87,7 @@ function App() {
     getNotes();
   }, []);
 
-  const eventHandler = () => {};
+  // const eventHandler = () => {};
 
   const changeNoteHandler = (
     ev: ChangeEvent<HTMLTextAreaElement>,
@@ -97,17 +97,18 @@ function App() {
     debouncedFilter(ev.target.value, id);
     const newArray = tasks.map((item, i) => {
       if (id === item.id) {
-        // console.log(item.id)
         return { ...item, note: ev.target.value };
       } else {
         return item;
       }
     });
+    // console.log(ev.target.value)
     // console.log(newArray)
     setTasks(newArray);
   };
 
-  const changeNotePin = (id: number) => {
+  const changeNotePin = async (id: number, isPin: boolean) => {
+    await supabase.from('notes').update({isPinned: !isPin}).eq("id", id)
     const newArray = tasks.map((item, i) => {
       if (id === item.id) {
         return { ...item, isPinned: !item.isPinned };
@@ -199,7 +200,7 @@ function App() {
                     </div>
 
                     <div
-                      onClick={() => changeNotePin(d.id)}
+                      onClick={() => changeNotePin(d.id, d.isPinned)}
                       className={`w-5 h-5 rounded cursor-pointer bg-transparent flex items-center justify-center hover:bg-gray-200 hover:text-gray-800 ${
                         d.isPinned ? "text-accent-content" : ""
                       } `}
