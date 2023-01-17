@@ -1,9 +1,16 @@
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import logo from "./logo.svg";
 import Navbar from "./components/Navbar";
 import Draggable, { DraggableCore } from "react-draggable";
-import { UilPlus, UilMapPinAlt, UilTrashAlt } from "@iconscout/react-unicons";
+import {
+  UilPlus,
+  UilMapPinAlt,
+  UilTrashAlt,
+  UilSpinner,
+} from "@iconscout/react-unicons";
 import TextareaAutosize from "react-textarea-autosize";
+// import supabs from '
+import { supabase } from "./initSupabase.js";
 
 export interface INote {
   id: number;
@@ -35,7 +42,28 @@ function App() {
   const [count, setCount] = useState(0);
   const [pinOn, setPinOn] = useState<Boolean>(false);
   const [tasks, setTasks] = useState<INote[]>(dataNotes);
-  const [position, setPosition] = useState(tasks.length)
+  const [status, setStatus] = useState<"loading" | "error" | "finish">(
+    "loading"
+  );
+  const [position, setPosition] = useState(tasks.length);
+  // const
+
+  async function getNotes() {
+    const { data, error } = await supabase.from("notes").select("*");
+    if (error) {
+      console.error(error);
+      setStatus("error");
+    } else {
+      setTimeout(() => {
+        setTasks(data);
+        setStatus("finish");
+      }, 3000);
+    }
+  }
+
+  useEffect(() => {
+    getNotes();
+  }, []);
 
   const eventHandler = () => {};
 
@@ -43,16 +71,18 @@ function App() {
     ev: ChangeEvent<HTMLTextAreaElement>,
     id: number
   ) => {
+    // console.log(tasks)
     const newArray = tasks.map((item, i) => {
       if (id === item.id) {
+        // console.log(item.id)
         return { ...item, note: ev.target.value };
       } else {
         return item;
       }
     });
+    // console.log(newArray)
     setTasks(newArray);
   };
-  
 
   const changeNotePin = (id: number) => {
     const newArray = tasks.map((item, i) => {
@@ -70,9 +100,7 @@ function App() {
     setTasks(newArray);
   };
 
-  const dragHandler = (id:number) => {
-
-  }
+  const dragHandler = (id: number) => {};
 
   return (
     <div className="h-screen flex flex-col">
@@ -102,17 +130,25 @@ function App() {
           <button
             onClick={() => setPinOn(!pinOn)}
             className={`${
-              pinOn ? "bg-secondary text-white" : "bg-gray-400 opacity-80 text-gray-200"
+              pinOn
+                ? "bg-secondary text-white"
+                : "bg-gray-400 opacity-80 text-gray-200"
             } h-9 w-9 flex items-center justify-center rounded-full`}
           >
             <UilMapPinAlt size="18" />
           </button>
         </div>
-        {tasks.length ? (
+        {status === "loading" ? (
+          <div className=" w-full flex items-center justify-center">
+            <div className="w-48 h-52 rounded bg-accent flex items-center justify-center text-neutral font-bold animate-pulse">
+              Getting Data...
+            </div>
+          </div>
+        ) : tasks.length ? (
           <div className="p-4 flex flex-wrap gap-3 overflow-y-auto overflow-x-hidden containerKu">
             {tasks.map((d, i) => (
               <Draggable
-                onStart={()=>dragHandler(d.id)}
+                onStart={() => dragHandler(d.id)}
                 key={i}
                 bounds="parent"
                 // bounds={{left: 1, right: 0, bottom: 10, top:20}}
