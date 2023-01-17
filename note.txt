@@ -1,0 +1,1 @@
+dibawah navbar kasih container buat nampung pinned note, nanti di kanan atau kiri taro si button plus nya
