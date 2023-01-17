@@ -47,18 +47,26 @@ function App() {
     "loading"
   );
   const [position, setPosition] = useState(tasks.length);
-  const [onUpdate, setOnUpdate] = useState<Boolean>(false)
+  const [onUpdate, setOnUpdate] = useState<Boolean>(false);
   // const
 
   const updateNoteData = async (input: string, id: number) => {
-    setOnUpdate(true)
-    const ssss = await supabase.from('notes').update({note: input}).eq('id', id)
-    if(ssss) console.log(ssss)
-    setOnUpdate(false)
-  }
+    setOnUpdate(true);
+    const ssss = await supabase
+      .from("notes")
+      .update({ note: input })
+      .eq("id", id);
+    if (ssss) console.log(ssss);
+    setTimeout(() => {
+      setOnUpdate(false);
+    }, 500);
+  };
 
   const debouncedFilter = useCallback(
-    debounce( async (input: string, id: number) => await updateNoteData(input, id), 1200),
+    debounce(
+      async (input: string, id: number) => await updateNoteData(input, id),
+      1200
+    ),
     []
   );
 
@@ -118,7 +126,7 @@ function App() {
   const dragHandler = (id: number) => {};
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="h-screen relative flex flex-col">
       <div className="z-0">
         <Navbar />
       </div>
@@ -216,6 +224,11 @@ function App() {
           </div>
         )}
       </div>
+      {onUpdate && (
+        <div className="absolute animate-bounce bottom-2 right-2 p-2 bg-neutral text-sm font-bold text-neutral-content rounded">
+          Saving Update...
+        </div>
+      )}
     </div>
   );
 }
