@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 import logo from "./logo.svg";
 import Navbar from "./components/Navbar";
 import Draggable, { DraggableCore } from "react-draggable";
@@ -11,6 +11,7 @@ import {
 import TextareaAutosize from "react-textarea-autosize";
 // import supabs from '
 import { supabase } from "./initSupabase.js";
+import debounce from "lodash.debounce";
 
 export interface INote {
   id: number;
@@ -46,7 +47,20 @@ function App() {
     "loading"
   );
   const [position, setPosition] = useState(tasks.length);
+  const [onUpdate, setOnUpdate] = useState<Boolean>(false)
   // const
+
+  const updateNoteData = async (input: string, id: number) => {
+    setOnUpdate(true)
+    const ssss = await supabase.from('notes').update({note: input}).eq('id', id)
+    if(ssss) console.log(ssss)
+    setOnUpdate(false)
+  }
+
+  const debouncedFilter = useCallback(
+    debounce( async (input: string, id: number) => await updateNoteData(input, id), 1200),
+    []
+  );
 
   async function getNotes() {
     const { data, error } = await supabase.from("notes").select("*");
@@ -72,6 +86,7 @@ function App() {
     id: number
   ) => {
     // console.log(tasks)
+    debouncedFilter(ev.target.value, id);
     const newArray = tasks.map((item, i) => {
       if (id === item.id) {
         // console.log(item.id)
@@ -111,6 +126,7 @@ function App() {
       <div className="flex-1 flex z-50 h-50 w-50">
         <div className="w-16 flex flex-col items-center gap-4 py-4 h-full bg-base-300 border-r-[1.3px] border-r-neutral">
           <button
+            disabled={status === "loading"}
             onClick={() =>
               setTasks((current) => [
                 ...current,
